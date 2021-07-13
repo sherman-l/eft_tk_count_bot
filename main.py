@@ -1,6 +1,7 @@
 from kill_history import Kill_history
 from kill_record import Kill_record
 from dotenv import load_dotenv
+from queue import PriorityQueue
 import os
 import json
 import discord
@@ -17,13 +18,23 @@ stats_invalid_params = 'Incorrect usage! ```$stats @user```'
 no_statistics_user = 'No stats available for {}'
 no_statistics_server = 'No stats available for server'
 kill_stats = 'User: {} \nTeam Kills: {}'
+log_string = 'Team Killer: {} \t Victim: {} \t Date: {}'
 
 ### Keys ###
 player_kill_stats = "player_kill_stats"
 kill_count = "kill_count"
 kill_log = "kill_log"
+killer_id = "killer_id"
+killed_id = "killed_id"
+date_of_kill = "date_of_kill"
 user_name = "user_name"
 
+
+async def get_user_name(user_id):
+  print(user_id)
+  user = await client.fetch_user(int(user_id))
+  print(user)
+  return user.name
 
 def mention_user(user_id):
   return "<@!" + user_id + ">"
@@ -41,6 +52,23 @@ def write_db_json(json_obj):
   kill_db = open(db_name, "w")
   json.dump(json_obj, kill_db, indent=4)
   kill_db.close()
+
+async def handle_log(message):
+  server = str(message.guild.id)
+  params = message.content.split()
+  if not params[1].isdigit():
+    return
+  json_obj = load_db_json()
+  log_json_obj = json_obj[server][kill_log]
+  index_ceiling = int(params[1])
+  count = 0
+  return_string = ""
+  while count < index_ceiling and count < len(log_json_obj):
+    index = len(log_json_obj) - (count + 1)
+    return_string = return_string + log_string.format(await get_user_name(log_json_obj[index][killer_id]), await get_user_name(log_json_obj[index][killed_id]), log_json_obj[index][date_of_kill]) + '\n'
+    count += 1
+  await message.channel.send(return_string)    
+  
 
 async def handle_stats(message):
   server = str(message.guild.id)
@@ -100,6 +128,8 @@ async def on_message(message):
       await message.channel.send(stats_invalid_params)
       return
     await handle_stats(message)
-      
+  
+  if message.content.startswith('$log'):
+    await handle_log(message)      
   
 client.run(os.getenv('TOKEN'))
