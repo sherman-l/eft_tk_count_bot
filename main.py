@@ -37,15 +37,15 @@ async def handle_tk(message):
     json_obj[server]["kill_log"] = []
     
   if tk_history.killer_id in json_obj[server]["player_kill_stats"]:
-    json_obj["player_kill_stats"][tk_history.killer_id]["kill_count"] += 1
+    json_obj[server]["player_kill_stats"][tk_history.killer_id]["kill_count"] += 1
   else:
-    json_obj["player_kill_stats"][tk_history.killer_id] = {}
-    json_obj["player_kill_stats"][tk_history.killer_id]["kill_count"] = 1
-    json_obj["player_kill_stats"][tk_history.killer_id]["user_name"] = killer.name
+    json_obj[server]["player_kill_stats"][tk_history.killer_id] = {}
+    json_obj[server]["player_kill_stats"][tk_history.killer_id]["kill_count"] = 1
+    json_obj[server]["player_kill_stats"][tk_history.killer_id]["user_name"] = killer.name
     await message.channel.send(mention_user(tk_history.killer_id) + " team killing " + mention_user(tk_history.killed_id) + " log entered!")
 
   kill_log_entry = json.loads(tk_history.to_json_string())
-  json_obj["kill_log"].append(kill_log_entry)
+  json_obj[server]["kill_log"].append(kill_log_entry)
   print(json_obj)
   write_db_json(json_obj)
 
