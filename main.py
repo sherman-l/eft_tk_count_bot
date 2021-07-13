@@ -19,6 +19,7 @@ no_statistics_user = 'No stats available for {}'
 no_statistics_server = 'No stats available for server'
 kill_stats = 'User: {} \nTeam Kills: {}'
 log_string = 'Team Killer: {} \t Victim: {} \t Date: {}'
+ranking_row = 'Rank: {} \tName: {} \tKill Count: {}'
 
 ### Keys ###
 player_kill_stats = "player_kill_stats"
@@ -52,6 +53,27 @@ def write_db_json(json_obj):
   kill_db = open(db_name, "w")
   json.dump(json_obj, kill_db, indent=4)
   kill_db.close()
+
+async def handle_rank(message):
+  server = str(message.guild.id)
+  json_obj = load_db_json()
+  server_json_obj = json_obj[server]
+  rank_pqueue = PriorityQueue()
+  if server in json_obj:
+    rank = 1
+    return_string = ""
+    for player_id in server_json_obj[player_kill_stats]:
+      entry = server_json_obj[player_kill_stats][player_id]
+      rank_pqueue.put((entry[kill_count], entry))
+    while not rank_pqueue.empty():
+      next_record = rank_pqueue.get()
+      print(next_record[1][kill_count])
+      return_string = return_string + ranking_row.format(str(rank), next_record[1][user_name], str(next_record[1][kill_count])) + "\n"
+      rank += 1
+    await message.channel.send(return_string)      
+  else:
+    await message.channel.send(no_statistics_server)
+    return
 
 async def handle_log(message):
   server = str(message.guild.id)
@@ -130,6 +152,9 @@ async def on_message(message):
     await handle_stats(message)
   
   if message.content.startswith('$log'):
-    await handle_log(message)      
+    await handle_log(message)   
+  
+  if message.content.startswith('$rank'):
+    await handle_rank(message)   
   
 client.run(os.getenv('TOKEN'))
