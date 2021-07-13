@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Data storage file
+kill_db.json
+.kill_db.json
