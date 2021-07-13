@@ -5,28 +5,38 @@ import json
 import discord
 
 client = discord.Client()
+db_name = "kill_db.json"
 
 def mention_user(user_id):
   return "<@!" + user_id + ">"
 
 def load_db_json():
-  kill_db = open("kill_db.json", "r")
+  if not os.path.isfile(db_name):
+    with open(db_name, "w") as db_file:
+      db_file.write(json.dumps({}))
+  kill_db = open(db_name, "r")
   json_obj = json.load(kill_db)
   kill_db.close()
   return json_obj
   
 def write_db_json(json_obj):
-  kill_db = open("kill_db.json", "w")
+  kill_db = open(db_name, "w")
   json.dump(json_obj, kill_db, indent=4)
   kill_db.close()
 
 async def handle_tk(message):
+  server = message.guild.id
   killer = message.mentions[0]
   killed = message.mentions[1]
   tk_history = Kill_history(killer.id, killed.id, message.created_at)
-  json_obj = load_db_json()
-        
-  if tk_history.killer_id in json_obj["player_kill_stats"]:
+  json_obj = load_db_json()  
+  
+  if server not in json_obj:
+    json_obj[server] = {}
+    json_obj[server]["player_kill_stats"] = {}
+    json_obj[server]["kill_log"] = []
+    
+  if tk_history.killer_id in json_obj[server]["player_kill_stats"]:
     json_obj["player_kill_stats"][tk_history.killer_id]["kill_count"] += 1
   else:
     json_obj["player_kill_stats"][tk_history.killer_id] = {}
