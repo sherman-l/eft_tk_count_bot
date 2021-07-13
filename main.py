@@ -10,8 +10,8 @@ db_name = "kill_db.json"
 load_dotenv()
 
 ### Error Strings ###
-tk_invalid_params = 'Invalid number of params! Appropriate use: ```\'$tk @killer @killed\'```'
-stats_invalid_params = 'Incorrect usage! ```\'$stats @user\'```'
+tk_invalid_params = 'Invalid number of params! \nAppropriate usage: ```$tk @killer @killed```'
+stats_invalid_params = 'Incorrect usage! ```$stats @user```'
 
 ### General Message Strings ###
 no_statistics_user = 'No stats available for {}'
@@ -77,7 +77,6 @@ async def handle_tk(message):
 
   kill_log_entry = json.loads(tk_history.to_json_string())
   json_obj[server][kill_log].append(kill_log_entry)
-  print(json_obj)
   write_db_json(json_obj)
 
 
@@ -91,7 +90,6 @@ async def on_message(message):
     return
 
   if message.content.startswith('$tk'):
-    print(message.mentions)
     if len(message.mentions) != 2:
       await message.channel.send(tk_invalid_params)
       return
@@ -100,6 +98,8 @@ async def on_message(message):
   if message.content.startswith('$stats'):
     if len(message.mentions) != 1:
       await message.channel.send(stats_invalid_params)
+      return
     await handle_stats(message)
-          
+      
+  
 client.run(os.getenv('TOKEN'))
