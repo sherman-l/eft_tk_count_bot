@@ -1,3 +1,5 @@
+import json
+
 class KillRecord:
   def __init__(self, user_id, user_name, kill_count):
     self.user_id = user_id

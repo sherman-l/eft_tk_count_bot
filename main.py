@@ -7,6 +7,7 @@ import json
 import discord
 import db_read_write as db
 
+### Set all intents so that discord can have access to the member list ###
 intents = discord.Intents.all()
 client = discord.Client(intents = intents)
 db_name = "kill_db.json"
@@ -15,6 +16,7 @@ load_dotenv()
 ### Error Strings ###
 tk_invalid_params = 'Invalid number of params! \nAppropriate usage: ```$tk @killer @killed```'
 stats_invalid_params = 'Incorrect usage! Correct usage: ```$stats @user``` Or alternatively to see all stats: ```$stats```'
+log_invalid_params = 'Incorrect usage! Correct usage: ```$log #``` where # is any number representing number of logs you wish to see, or ```$log``` to see the last 10 logs by default'
 
 ### General Message Strings ###
 no_statistics_user = 'No stats available for {}'
@@ -42,17 +44,21 @@ rankings = 'rankings'
 default_log_count = '10'
 reaction_timeout = 30.0
 
+# Fetch user object from user_id string
 async def get_user_obj(user_id):
   user = await client.fetch_user(int(user_id))
   return user
   
+# Fetch user name from user_id string
 async def get_user_name(user_id):
   user = await client.fetch_user(int(user_id))
   return user.name
 
+# Adds syntax to string necessary to mention a user within discord
 def mention_user(user_id):
   return "<@!" + user_id + ">"
 
+# Embeds rank stats for all users stored within the rank priority queue
 def embed_rank_stats(rank_pqueue, server_json_obj):
   embed = discord.Embed(
     title = tk_rankings,
@@ -67,6 +73,7 @@ def embed_rank_stats(rank_pqueue, server_json_obj):
       value = user_stats[user_name],
       inline = True
     )
+    # Empty field for formatting
     embed.add_field(
       name = '\u200b',
       value = '\u200b',
@@ -83,6 +90,8 @@ def embed_rank_stats(rank_pqueue, server_json_obj):
       inline = False      
     )
     rank = rank + 1
+    
+  # Remove extra space at the end 
   embed.remove_field(len(embed.fields) - 1)
   return embed
 
@@ -106,9 +115,13 @@ async def handle_rank(message):
 async def handle_log(message):
   server = str(message.guild.id)
   params = message.content.split()
+  # Set default log entries to print to 10 when user does not specify a number
   if len(params) < 2:
     params.append(default_log_count)
+  
+  # Sends error message if 1st param entered is not a number
   if not params[1].isdigit():
+    await message.channel.send(log_invalid_params)
     return
   json_obj = db.load_db_json()
   log_json_obj = json_obj[server][kill_log]
@@ -120,7 +133,9 @@ async def handle_log(message):
     return_string = return_string + log_string.format(await get_user_name(log_json_obj[index][killer_id]), await get_user_name(log_json_obj[index][killed_id]), log_json_obj[index][date_of_kill]) + '\n'
     count += 1
   await message.channel.send(return_string)    
-  
+
+# Sets reactions onto an embed message such that the person requesting command can flip through
+# different pages of data using the reaction controls  
 async def add_reaction_controls_to_embed(message, footer_message, pages):
   pages[0].set_footer(text=footer_message.format(1, str(len(pages))))
   sent_message = await message.channel.send(embed = pages[0])
@@ -128,7 +143,8 @@ async def add_reaction_controls_to_embed(message, footer_message, pages):
   await sent_message.add_reaction('◀')
   await sent_message.add_reaction('▶')
   await sent_message.add_reaction('⏭')
-      
+  
+  # Checks whether user who reacted is the same as the user who requested command
   def check(reaction, user):
     return user == message.author
       
@@ -170,6 +186,8 @@ async def handle_stats(message, user = None):
   server = str(message.guild.id)
   server_obj = client.get_guild(message.guild.id)
   json_obj = db.load_db_json()
+  
+  # If user or server does not exist in db, print error message
   if server in json_obj:
     if user != None:
       user_id = str(user.id)
@@ -210,6 +228,7 @@ async def handle_tk(message):
   db.write_db_json(json_obj)
   await message.channel.send(mention_user(str(killer.id)) + " team killing " + mention_user(str(killed.id)) + " log entered!")
 
+# Adds server and user entry into db if it does not exist, adds 1 to the kill count of the user otherwise
 def add_tk_to_obj(json_obj, server, killer):
   if server not in json_obj:
     json_obj[server] = {}
