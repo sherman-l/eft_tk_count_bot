@@ -1,7 +1,7 @@
-class Kill_history:
+class KillHistory:
   def __init__(self, killer_id, killed_id, date_of_kill):
-    self.killer_id = str(killer_id)
-    self.killed_id = str(killed_id)
+    self.killer_id = killer_id
+    self.killed_id = killed_id
     self.date_of_kill = date_of_kill
 
   def get_killer_id(self):
@@ -13,6 +13,9 @@ class Kill_history:
   def get_date_of_kill(self):
     return self.date_of_kill
 
-  def to_json_string(self):
-    return_string = '"killer_id": "{}", "killed_id": "{}", "date_of_kill": "{}"'
-    return '{' + return_string.format(self.killer_id, self.killed_id, self.date_of_kill) + '}'
+  def to_json(self):
+    json = {}
+    json["killer_id"] = self.killer_id
+    json["killed_id"] = self.killed_id
+    json["date_of_kill"] = str(self.date_of_kill)
+    return json
