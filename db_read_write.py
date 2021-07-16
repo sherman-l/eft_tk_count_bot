@@ -13,6 +13,13 @@ def load_db_json():
   return json_obj
   
 def write_db_json(json_obj):
-  db = open(db_name, "w")
-  json.dump(json_obj, db, indent=4)
-  db.close()
+  backup_json = load_db_json()
+  try:
+    db = open(db_name, "w")
+    json.dump(json_obj, db, indent=4)
+    db.close()
+  except:
+    print("error writing json! restoring to backup")
+    db = open(db_name, "w")
+    json.dump(backup_json, db, indent=4)
+    db.close()    
