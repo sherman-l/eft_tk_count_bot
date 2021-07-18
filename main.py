@@ -124,6 +124,10 @@ async def handle_log(message):
     await message.channel.send(ls.get_string(server_language, skey.log_invalid_params))
     return
   json_obj = db.load_db_json(db_name)
+
+  if server not in json_obj:
+    await message.channel.send(ls.get_string(server_language, skey.no_statistics_server))
+    return
   log_json_obj = json_obj[server][kill_log]
   index_ceiling = int(params[1])
   count = 0
