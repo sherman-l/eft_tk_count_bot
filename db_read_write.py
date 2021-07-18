@@ -1,9 +1,7 @@
 import os
 import json
 
-db_name = "kill_db.json"
-
-def load_db_json():
+def load_db_json(db_name):
   if not os.path.isfile(db_name):
     with open(db_name, "w") as db_file:
       db_file.write(json.dumps({}))
@@ -12,8 +10,8 @@ def load_db_json():
   db.close()
   return json_obj
   
-def write_db_json(json_obj):
-  backup_json = load_db_json()
+def write_db_json(db_name, json_obj):
+  backup_json = load_db_json(db_name)
   try:
     db = open(db_name, "w")
     json.dump(json_obj, db, indent=4)
