@@ -194,7 +194,7 @@ async def handle_stats(message, user = None):
     if user != None:
       user_id = str(user.id)
       if user_id in json_obj[server][player_kill_stats]:
-        await message.channel.send(embed = embed_stats(message, json_obj[server], user, json_obj[server][language]))
+        await message.channel.send(embed = embed_stats(message, json_obj[server], user))
       else:
         await message.channel.send(ls.get_string(server_language, skey.no_statistics_user).format(mention_user(user_id)))
     else:
