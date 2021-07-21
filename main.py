@@ -2,6 +2,8 @@ from kill_history import KillHistory
 from kill_record import KillRecord
 from dotenv import load_dotenv
 from queue import PriorityQueue
+import sys
+sys.path.insert(0, './strings')
 import os
 import json
 import discord
@@ -249,6 +251,7 @@ def add_tk_to_obj(json_obj, server, killer):
     player_entry = KillRecord(killer.id, killer.name, 1)
     json_obj[server][player_kill_stats][str(killer.id)] = player_entry.to_json()
 
+# Function to change language setting of server. Updates setting inside record of json db for server and updates the language setting in memory.
 async def handle_lang(message):
   params = message.content.split()
   server = str(message.guild.id)
@@ -289,10 +292,8 @@ async def on_message(message):
     if len(message.mentions) != 2:
       await message.channel.send(ls.get_string(language_settings.get(str(message.guild.id)), skey.tk_invalid_params))
     else:
-      await handle_tk(message)
-      return
-    
-  if message.content.startswith('$stats'):
+      await handle_tk(message)    
+  elif message.content.startswith('$stats'):
     # Loads stats for a single user that has been mentioned
     if len(message.mentions) == 1:
       await handle_stats(message, message.mentions[0])
@@ -301,17 +302,16 @@ async def on_message(message):
       await handle_stats(message)    
     else:
       await message.channel.send(ls.get_string(language_settings.get(str(message.guild.id)), skey.stats_invalid_params))
-      return
-  
-  if message.content.startswith('$log'):
+  elif message.content.startswith('$log'):
     await handle_log(message)   
-    return
-  
-  if message.content.startswith('$rank'):
+  elif message.content.startswith('$rank'):
     await handle_rank(message)
-    return
-  
-  if message.content.startswith('$lang'):
+  elif message.content.startswith('$lang'):
     await handle_lang(message)
-    return 
+  elif message.content.startswith('$help'):
+    await message.channel.send(ls.get_string(language_settings.get(str(message.guild.id)), skey.help_message))
+  # Send unrecognized command message
+  elif message.content.startswith('$'):
+    await message.channel.send(ls.get_string(language_settings.get(str(message.guild.id)), skey.unrecognized_command))
+
 client.run(os.getenv('TOKEN'))
