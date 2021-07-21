@@ -1,8 +1,10 @@
 import sys
+sys.path.insert(0, './strings')
 import json
 import os
 import strings_en
 import strings_jp
+
 
 strings = {}
 strings["en"] = strings_en.dictionary
