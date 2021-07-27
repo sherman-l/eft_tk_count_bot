@@ -41,3 +41,7 @@ Changes the language of the messages of the bot. Currently supported parameters
 - Japanese: `jp`  
 
 ![lang-demo-gif](./gif/lang.gif)
+
+##Future Considerations
+- Adding more fun features, such as reason for the team kill (ie. Miscommunication, Other player walked in front)
+- Ranking for top victims of team killing
